@@ -1,91 +1,157 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NethLive Program Admin</title>
     <style>
-        body { font-family: sans-serif; background: #222; color: #eee; padding: 20px; }
-        input, button { padding: 10px; margin: 5px; border-radius: 5px; border: 1px solid #555; background: #333; color: #eee; }
-        button { cursor: pointer; background: #FE0027; }
-        #container { max-width: 600px; margin: auto; }
-        label { display: block; margin-top: 10px; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #0F1115;
+            color: #EAEAEA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        #container {
+            width: 100%;
+            max-width: 500px;
+            padding: 2rem;
+            background-color: #1A1D23;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            color: #FFFFFF;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        label {
+            display: block;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #CCCCCC;
+            font-weight: 500;
+        }
+        input[type="text"], input[type="url"] {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background-color: #0F1115;
+            color: #EAEAEA;
+            font-size: 1rem;
+        }
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 2rem;
+            border-radius: 8px;
+            border: none;
+            background-color: #FE0027;
+            color: #FFFFFF;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #C5001C;
+        }
+        #status {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #F44336; }
     </style>
 </head>
 <body>
 
 <div id="container">
-    <h1>Add/Edit Program</h1>
-    <label for="title">Title:</label>
-    <input type="text" id="title" placeholder="Program Title">
+    <h1>Add Program</h1>
+    <form id="program-form">
+        <label for="title">Title:</label>
+        <input type="text" id="title" placeholder="Program Title" required>
 
-    <label for="subtitle">Subtitle:</label>
-    <input type="text" id="subtitle" placeholder="Program Subtitle">
+        <label for="subtitle">Subtitle:</label>
+        <input type="text" id="subtitle" placeholder="Program Subtitle" required>
 
-    <label for="heading">Heading:</label>
-    <input type="text" id="heading" placeholder="e.g., Music | NethFM">
+        <label for="heading">Heading:</label>
+        <input type="text" id="heading" placeholder="e.g., Music | NethFM" required>
 
-    <label for="youtubeUrl">YouTube URL:</label>
-    <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=...">
+        <label for="youtubeUrl">YouTube URL:</label>
+        <input type="url" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." required>
 
-    <label>
-        <input type="checkbox" id="featured"> Is Featured?
-    </label>
+        <label style="display: flex; align-items: center; margin-top: 1.5rem;">
+            <input type="checkbox" id="featured"> Is this a Featured Program?
+        </label>
 
-    <button onclick="addProgram()">Add Program to Firestore</button>
-    <p id="status"></p>
+        <button type="submit">Add Program to Firestore</button>
+        <p id="status"></p>
+    </form>
 </div>
 
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<!-- Firebase SDKs using the latest v9 modular syntax -->
+<script type="module">
+    // Import the functions you need from the SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-<script>
-   const firebaseConfig = {
-  apiKey: "AIzaSyBQTLt__6SBomGkGDtWtu6xiRV6CTrQEBM",
-  authDomain: "nethliveappbackend.firebaseapp.com",
-  projectId: "nethliveappbackend",
-  storageBucket: "nethliveappbackend.firebasestorage.app",
-  messagingSenderId: "973325152381",
-  appId: "1:973325152381:web:8ed64ec03de8756b970114",
-  measurementId: "G-BL8CPC52T2"
-};
+    // IMPORTANT: Replace with your project's Firebase configuration
+     const firebaseConfig = {
+    apiKey: "AIzaSyD9vo1bP1znUYXvs2Ygng6Tfx8unBOlNWI",
+    authDomain: "nethliveappbackend.firebaseapp.com",
+    projectId: "nethliveappbackend",
+    storageBucket: "nethliveappbackend.firebasestorage.app",
+    messagingSenderId: "973325152381",
+    appId: "1:973325152381:web:37e7276fa86b17e5970114",
+    measurementId: "G-0D0V50SBBN"
+  };
 
     // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    function addProgram() {
+    const form = document.getElementById('program-form');
+    const statusEl = document.getElementById('status');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault(); // Prevent the form from reloading the page
+
         const title = document.getElementById('title').value;
         const subtitle = document.getElementById('subtitle').value;
         const heading = document.getElementById('heading').value;
         const youtubeUrl = document.getElementById('youtubeUrl').value;
         const featured = document.getElementById('featured').checked;
-        const statusEl = document.getElementById('status');
 
-        if (!title || !youtubeUrl) {
-            statusEl.textContent = "Error: Title and YouTube URL are required.";
-            return;
+        statusEl.textContent = "Adding...";
+        statusEl.className = "";
+
+        try {
+            const docRef = await addDoc(collection(db, "programs"), {
+                title: title,
+                subtitle: subtitle,
+                heading: heading,
+                youtubeUrl: youtubeUrl,
+                featured: featured
+            });
+            statusEl.textContent = "Program added successfully!";
+            statusEl.className = "success";
+            form.reset(); // Clear the form
+        } catch (error) {
+            console.error("Error adding document: ", error);
+            statusEl.textContent = "Error: " + error.message;
+            statusEl.className = "error";
         }
-
-        db.collection("programs").add({
-            title: title,
-            subtitle: subtitle,
-            heading: heading,
-            youtubeUrl: youtubeUrl,
-            featured: featured
-        })
-        .then((docRef) => {
-            statusEl.textContent = "Program added successfully with ID: " + docRef.id;
-            // Clear form
-            document.getElementById('title').value = '';
-            document.getElementById('subtitle').value = '';
-            document.getElementById('heading').value = '';
-            document.getElementById('youtubeUrl').value = '';
-            document.getElementById('featured').checked = false;
-        })
-        .catch((error) => {
-            statusEl.textContent = "Error adding document: " + error;
-        });
-    }
+    });
 </script>
 
 </body>
